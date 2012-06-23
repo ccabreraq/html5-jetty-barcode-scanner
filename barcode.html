@@ -1,0 +1,52 @@
+﻿<body onload="uradi()">
+<video id="cam" width="320px" height="240px" autoplay style="display: inline;"></video>
+<canvas width="320" id="canvas" height="240" style="display: inline;"></canvas>
+
+
+<script src="datatouri.js"></script>
+<script type="text/javascript">
+ 	 
+function uradi() { 
+	var video = document.getElementById("cam");
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext('2d');
+	
+	var getUserMedia = function(t, onsuccess, onerror) {
+
+
+
+		if (navigator.getUserMedia) return navigator.getUserMedia(t, onsuccess, onerror);
+		if (navigator.webkitGetUserMedia) return navigator.webkitGetUserMedia(t, onsuccess, onerror);
+		if (navigator.mozGetUserMedia)	return navigator.mozGetUserMedia(t, onsuccess, onerror);
+		if (navigator.msGetUserMedia) return navigator.msGetUserMedia(t, onsuccess, onerror);
+		
+		onerror(new Error("Nema :(."));
+	};
+
+	var URL = window.URL || window.webkitURL;
+	var createObjectURL = URL.createObjectURL || webkitURL.createObjectURL;
+	if (!createObjectURL) {
+		alert("Greska");
+	}
+
+	getUserMedia({"video": true},function(stream) {
+			var url = createObjectURL(stream);
+			video.src = url;
+		},	function(error) {alert(":((");}
+	);
+	
+	var ws = new WebSocket("ws://127.0.0.1:8088");
+    ws.onmessage = function (evt) { 
+        alert(evt.data);
+    };
+	 
+	timer = setInterval(
+            function () {
+                ctx.drawImage(video, 0, 0, 320, 240);
+                var x = canvas.toDataURL('image/jpeg', 1.0);
+                blb = dataURItoBlob(x);
+                ws.send(blb);
+    }, 250);
+
+}
+</script>
